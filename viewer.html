@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebVoyager Results Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background-color: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .category {
+            margin-bottom: 20px;
+        }
+        
+        .category-header {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .category-header:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .task-item {
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+        }
+        
+        .task-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .task-item.selected {
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+        
+        .task-id {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .task-status {
+            width: 20px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .task-meta-item {
+            white-space: nowrap;
+        }
+        
+        .sidebar h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .task-selector {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .task-selector select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .timeline {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .observation {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        
+        .observation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .observation-index {
+            font-size: 24px;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .observation-timestamp {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .observation-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .observation-data {
+            margin-top: 10px;
+        }
+        
+        .data-section {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        .data-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .data-content {
+            color: #333;
+            word-wrap: break-word;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #d32f2f;
+        }
+        
+        .stats {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .evaluation {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .evaluation.failed {
+            background-color: #ffebee;
+        }
+        
+        .evaluation-result {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .evaluation.failed .evaluation-result {
+            color: #c62828;
+        }
+        
+        .evaluation-reasoning {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .agent-answer {
+            background-color: #e1f5fe;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0288d1;
+        }
+        
+        .agent-answer.no-answer {
+            background-color: #fff3e0;
+            border-left-color: #f57c00;
+        }
+        
+        .agent-answer-label {
+            font-weight: bold;
+            color: #0277bd;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .agent-answer.no-answer .agent-answer-label {
+            color: #e65100;
+        }
+        
+        .agent-answer-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .agent-answer-text p {
+            margin: 0 0 0.8em 0;
+        }
+        
+        .agent-answer-text p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .agent-answer-text strong {
+            font-weight: 600;
+            color: #1976d2;
+        }
+        
+        .agent-answer-text em {
+            font-style: italic;
+        }
+        
+        .agent-answer.no-answer .agent-answer-text {
+            font-style: italic;
+            color: #666;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .task-question {
+            background-color: #f3e5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e1bee7;
+        }
+        
+        .task-question h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #6a1b9a;
+        }
+        
+        .task-question-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .task-url {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .task-url a {
+            color: #6a1b9a;
+            text-decoration: none;
+        }
+        
+        .task-url a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>WebVoyager Results</h2>
+        <div style="margin-bottom: 20px;">
+            <label for="resultsFolder" style="display: block; margin-bottom: 5px; font-weight: bold;">Results Folder:</label>
+            <select id="resultsFolder" style="width: 100%; padding: 8px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="loading">Loading folders...</option>
+            </select>
+        </div>
+        
+        <div id="summaryStats" style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
+            <h3 style="margin-top: 0; margin-bottom: 10px; color: #333;">Summary Statistics</h3>
+            <div id="summaryContent">
+                <!-- Summary stats will be populated here -->
+            </div>
+        </div>
+        
+        <h3>Tasks</h3>
+        <div id="tasksList">
+            <div class="loading">Loading tasks...</div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="container">
+            <h1>WebVoyager Results Visualizer</h1>
+            
+            <div id="content">
+                <div class="loading">Select a task to view results</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let categorizedTasks = {};
+        let selectedTask = null;
+        let currentResultsPath = null;
+
+        async function loadResultsFolders() {
+            try {
+                const response = await fetch('/api/results-folders');
+                const folders = await response.json();
+                
+                const select = document.getElementById('resultsFolder');
+                select.innerHTML = '';
+                
+                if (folders.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No results folders found';
+                    select.appendChild(option);
+                    return;
+                }
+                
+                folders.forEach((folder, index) => {
+                    const option = document.createElement('option');
+                    option.value = folder;
+                    option.textContent = folder;
+                    if (index === 0) {
+                        option.selected = true;
+                        currentResultsPath = folder;
+                    }
+                    select.appendChild(option);
+                });
+                
+                select.addEventListener('change', (e) => {
+                    currentResultsPath = e.target.value;
+                    loadTasksSidebar();
+                    loadSummaryStats();
+                });
+                
+                // Load initial data
+                loadTasksSidebar();
+                loadSummaryStats();
+            } catch (error) {
+                console.error('Error loading results folders:', error);
+                document.getElementById('resultsFolder').innerHTML = '<option>Error loading folders</option>';
+            }
+        }
+        
+        async function loadSummaryStats() {
+            if (!currentResultsPath) return;
+            
+            try {
+                const response = await fetch(`/api/stats?resultsPath=${currentResultsPath}`);
+                const stats = await response.json();
+                
+                const summaryDiv = document.getElementById('summaryStats');
+                const contentDiv = document.getElementById('summaryContent');
+                
+                summaryDiv.style.display = 'block';
+                
+                contentDiv.innerHTML = `
+                    <div style="display: grid; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Tasks:</span>
+                            <strong>${stats.totalTasks}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Successful:</span>
+                            <strong style="color: #4caf50;">${stats.successfulTasks}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Success Rate:</span>
+                            <strong style="color: ${stats.successRate >= 50 ? '#4caf50' : '#f44336'};">${stats.successRate.toFixed(1)}%</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Avg Actions:</span>
+                            <strong>${stats.avgActions.toFixed(1)}</strong>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading summary stats:', error);
+                document.getElementById('summaryStats').style.display = 'none';
+            }
+        }
+        
+        async function loadTasksSidebar() {
+            if (!currentResultsPath) {
+                document.getElementById('tasksList').innerHTML = '<div class="loading">No results folder selected</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/tasks-summary?resultsPath=${currentResultsPath}`);
+                categorizedTasks = await response.json();
+                
+                const tasksList = document.getElementById('tasksList');
+                tasksList.innerHTML = '';
+                
+                // Create category sections
+                for (const [category, tasks] of Object.entries(categorizedTasks)) {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'category';
+                    
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.className = 'category-header';
+                    const successCount = tasks.filter(t => t.success === true).length;
+                    const totalCount = tasks.length;
+                    categoryHeader.textContent = `${category} (${successCount}/${totalCount})`;
+                    categoryDiv.appendChild(categoryHeader);
+                    
+                    const tasksContainer = document.createElement('div');
+                    
+                    tasks.forEach(task => {
+                        const taskItem = document.createElement('div');
+                        taskItem.className = 'task-item';
+                        taskItem.dataset.taskId = task.id;
+                        
+                        // Status icon
+                        const statusSpan = document.createElement('span');
+                        statusSpan.className = 'task-status';
+                        if (task.success === true) {
+                            statusSpan.textContent = '✓';
+                            statusSpan.style.color = '#4caf50';
+                        } else if (task.success === false) {
+                            statusSpan.textContent = '✗';
+                            statusSpan.style.color = '#f44336';
+                        } else {
+                            statusSpan.textContent = '?';
+                            statusSpan.style.color = '#999';
+                        }
+                        
+                        // Task ID
+                        const idSpan = document.createElement('span');
+                        idSpan.className = 'task-id';
+                        idSpan.textContent = task.id;
+                        
+                        // Meta info
+                        const metaDiv = document.createElement('div');
+                        metaDiv.className = 'task-meta';
+                        
+                        if (task.time) {
+                            const timeSpan = document.createElement('span');
+                            timeSpan.className = 'task-meta-item';
+                            const timeMin = Math.floor(task.time / 60000);
+                            timeSpan.textContent = `${timeMin}m`;
+                            metaDiv.appendChild(timeSpan);
+                        }
+                        
+                        
+                        if (task.tokens) {
+                            const tokensSpan = document.createElement('span');
+                            tokensSpan.className = 'task-meta-item';
+                            const tokensK = Math.round(task.tokens / 1000);
+                            tokensSpan.textContent = `${tokensK}k`;
+                            metaDiv.appendChild(tokensSpan);
+                        }
+                        
+                        taskItem.appendChild(statusSpan);
+                        taskItem.appendChild(idSpan);
+                        taskItem.appendChild(metaDiv);
+                        
+                        taskItem.addEventListener('click', () => selectTask(task.id));
+                        
+                        tasksContainer.appendChild(taskItem);
+                    });
+                    
+                    categoryDiv.appendChild(tasksContainer);
+                    tasksList.appendChild(categoryDiv);
+                    
+                    // Toggle category
+                    categoryHeader.addEventListener('click', () => {
+                        const isHidden = tasksContainer.style.display === 'none';
+                        tasksContainer.style.display = isHidden ? 'block' : 'none';
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                document.getElementById('tasksList').innerHTML = 
+                    '<div class="error">Error loading tasks.</div>';
+            }
+        }
+        
+        function selectTask(taskId) {
+            // Update selected state
+            document.querySelectorAll('.task-item').forEach(item => {
+                item.classList.toggle('selected', item.dataset.taskId === taskId);
+            });
+            
+            selectedTask = taskId;
+            loadTaskData(taskId);
+        }
+
+        async function loadTaskData(taskName) {
+            if (!taskName) {
+                document.getElementById('content').innerHTML = 
+                    '<div class="loading">Select a task to view results</div>';
+                return;
+            }
+
+            document.getElementById('content').innerHTML = 
+                '<div class="loading">Loading task data...</div>';
+
+            try {
+                const response = await fetch(`/api/task/${encodeURIComponent(taskName)}?resultsPath=${currentResultsPath || 'default'}`);
+                currentData = await response.json();
+                displayTaskData();
+            } catch (error) {
+                console.error('Error loading task data:', error);
+                document.getElementById('content').innerHTML = 
+                    '<div class="error">Error loading task data. Please try again.</div>';
+            }
+        }
+
+        function displayTaskData() {
+            if (!currentData || !currentData.memory || !currentData.memory.observations) {
+                document.getElementById('content').innerHTML = 
+                    '<div class="error">No observation data found for this task.</div>';
+                return;
+            }
+
+            const observations = currentData.memory.observations;
+            let html = '';
+
+            // Task question section
+            if (currentData.task && currentData.task.ques) {
+                html += '<div class="task-question">';
+                html += '<h3>Task</h3>';
+                html += `<div class="task-question-text">${currentData.task.ques}</div>`;
+                if (currentData.task.web) {
+                    html += `<div class="task-url">URL: <a href="${currentData.task.web}" target="_blank">${currentData.task.web}</a></div>`;
+                }
+                html += '</div>';
+            }
+            
+            // Agent's answer section
+            const answerObservation = observations.find(obs => obs.source === 'action:taken:answer');
+            if (answerObservation && answerObservation.data) {
+                
+                // Get the answer text
+                let answerText = '';
+                
+                // It's in data.content as a JSON string
+                if (answerObservation.data.content) {
+                    try {
+                        const parsed = JSON.parse(answerObservation.data.content);
+                        answerText = parsed.input || answerObservation.data.content;
+                    } catch {
+                        answerText = answerObservation.data.content;
+                    }
+                } else if (typeof answerObservation.data === 'string') {
+                    try {
+                        const parsed = JSON.parse(answerObservation.data);
+                        answerText = parsed.input || answerObservation.data;
+                    } catch {
+                        answerText = answerObservation.data;
+                    }
+                }
+                
+                // Convert to string and format
+                answerText = String(answerText)
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+                
+                html += '<div class="agent-answer">';
+                html += '<div class="agent-answer-label">Agent\'s Answer:</div>';
+                html += `<div class="agent-answer-text"><p>${answerText}</p></div>`;
+                html += '</div>';
+            } else {
+                html += '<div class="agent-answer no-answer">';
+                html += '<div class="agent-answer-label">Agent\'s Answer:</div>';
+                html += '<div class="agent-answer-text">No answer provided</div>';
+                html += '</div>';
+            }
+
+            // Evaluation section
+            if (currentData.evaluation) {
+                const isSuccess = currentData.evaluation.result === 'SUCCESS';
+                html += `<div class="evaluation ${isSuccess ? '' : 'failed'}">`;
+                html += `<div class="evaluation-result">${isSuccess ? '✅ SUCCESS' : '❌ NOT SUCCESS'}</div>`;
+                if (currentData.evaluation.reasoning) {
+                    html += `<div class="evaluation-reasoning">${currentData.evaluation.reasoning}</div>`;
+                }
+                html += '</div>';
+            }
+
+            // Stats section
+            html += '<div class="stats">';
+            html += '<div class="stats-grid">';
+            html += `<div class="stat-item">
+                        <div class="stat-value">${observations.length}</div>
+                        <div class="stat-label">Total Observations</div>
+                     </div>`;
+            
+            // Time stats
+            if (currentData.time) {
+                const timeMin = Math.floor(currentData.time / 60000);
+                const timeSec = ((currentData.time % 60000) / 1000).toFixed(1);
+                html += `<div class="stat-item">
+                            <div class="stat-value">${timeMin}m ${timeSec}s</div>
+                            <div class="stat-label">Total Time</div>
+                         </div>`;
+            }
+            
+            // Action count
+            if (currentData.actionCount !== undefined) {
+                html += `<div class="stat-item">
+                            <div class="stat-value">${currentData.actionCount}</div>
+                            <div class="stat-label">Actions</div>
+                         </div>`;
+            }
+            
+            
+            // Token stats
+            if (currentData.totalInputTokens !== undefined) {
+                html += `<div class="stat-item">
+                            <div class="stat-value">${currentData.totalInputTokens.toLocaleString()}</div>
+                            <div class="stat-label">Input Tokens</div>
+                         </div>`;
+            }
+            
+            if (currentData.totalOutputTokens !== undefined) {
+                html += `<div class="stat-item">
+                            <div class="stat-value">${currentData.totalOutputTokens.toLocaleString()}</div>
+                            <div class="stat-label">Output Tokens</div>
+                         </div>`;
+            }
+            
+            html += '</div></div>';
+
+            // Timeline section
+            html += '<div class="timeline">';
+            html += '<h2>Observation Timeline</h2>';
+
+            observations.forEach((obs, index) => {
+                html += '<div class="observation">';
+                html += '<div class="observation-header">';
+                html += `<div class="observation-index">#${index + 1}</div>`;
+                
+                const timestamp = new Date(obs.timestamp);
+                html += `<div class="observation-timestamp">${timestamp.toLocaleString()}</div>`;
+                html += '</div>';
+
+                // Display image if present
+                if (obs.data && obs.data.base64) {
+                    html += `<img class="observation-image" src="data:image/${obs.data.format || 'png'};base64,${obs.data.base64}" alt="Observation ${index + 1}">`;
+                }
+
+                // Display other data
+                if (obs.data) {
+                    html += '<div class="observation-data">';
+                    
+                    // Display source
+                    if (obs.source) {
+                        html += '<div class="data-section">';
+                        html += '<div class="data-label">Source:</div>';
+                        html += `<div class="data-content">${obs.source}</div>`;
+                        html += '</div>';
+                    }
+
+                    // Display any additional data fields
+                    Object.keys(obs.data).forEach(key => {
+                        if (key !== 'base64' && key !== 'format' && key !== 'type' && key !== 'storage') {
+                            html += '<div class="data-section">';
+                            html += `<div class="data-label">${key}:</div>`;
+                            html += `<div class="data-content">${JSON.stringify(obs.data[key], null, 2)}</div>`;
+                            html += '</div>';
+                        }
+                    });
+
+                    // Display type if not media
+                    if (obs.data.type && obs.data.type !== 'media') {
+                        html += '<div class="data-section">';
+                        html += '<div class="data-label">Type:</div>';
+                        html += `<div class="data-content">${obs.data.type}</div>`;
+                        html += '</div>';
+                    }
+                    
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            html += '</div>';
+            document.getElementById('content').innerHTML = html;
+        }
+
+        // Load folders and tasks on page load
+        loadResultsFolders();
+    </script>
+</body>
+</html>

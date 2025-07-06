@@ -1,0 +1,16 @@
+# Ignore results directory - they should be in blob storage
+results/
+
+# Development files
+*.log
+.env
+.env.local
+node_modules/
+.DS_Store
+
+# Local viewer
+viewer.ts
+viewer.html
+wv-runner.ts
+wv.ts
+upload-to-blob.ts

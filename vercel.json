@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/blob.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/blob.js"
+    }
+  ]
+}

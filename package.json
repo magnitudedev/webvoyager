@@ -1,0 +1,16 @@
+{
+  "name": "webvoyager-viewer",
+  "version": "1.0.0",
+  "description": "WebVoyager Results Viewer",
+  "scripts": {
+    "dev": "bun run viewer.ts",
+    "upload": "bun run upload-to-blob.ts"
+  },
+  "dependencies": {
+    "@vercel/blob": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.8.3"
+  }
+}
