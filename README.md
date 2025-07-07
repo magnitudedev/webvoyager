@@ -1,10 +1,4 @@
-<div align="center">
-  <img src="assets/logo.svg" alt="Magnitude Text Logo" width="100"/>
-</div>
-
-<hr style="height: 1px; border: none; background-color: #e1e4e8; margin: 24px 0;">
-
-# Magnitude WebVoyager
+# Magnitude WebVoyager Benchmark Results
 
 [Magnitude](https://github.com/magnitudedev/magnitude) achieves state-of-the-art performance with **93.9% success rate** on WebVoyager, beating all other browser agents, including OpenAI Operator, browser-use, and others.
 
@@ -13,6 +7,11 @@ Comprehensive task results for our run are available [here](https://magnitude-we
 The [original WebVoyager benchmark](https://github.com/MinorJerry/WebVoyager) was meant to demonstrate a new technique for interacting with the browser by annotating the DOM. Since then, vision models have come a long way in terms of accuracy and visual understanding. Based on these results, our pure-vision approach proves stronger than techniques that rely on the DOM for interaction (like the original WebVoyager agent or browser-use), while our agentic architecture is more robust than lightweight tool wrappers like Operator.
 
 ## 📊 Results
+
+<div align="center">
+  <img src="assets/chart.png" alt="Magnitude Text Logo" width="600"/>
+</div>
+
 
 ### 🤖 Agent comparison
 
@@ -61,11 +60,12 @@ The original WebVoyager benchmark contains many tasks which are time-dependent a
 ## Reproducing results
 We include the results from our pass@1 evaluation to [view easily](https://magnitude-webvoyager.vercel.app/), however if you would like to confirm our findings we aim to make that easy as well.
 
+> [!CAUTION]
 > Keep in mind that running the full benchmark is time consuming and expensive.
 
 To run our WebVoyager eval:
 - Install bun (https://bun.sh/)
-- If you have a Claude Pro or Max plan, that can be used to authenticate with Magnitude. Otherwise, edit the LLM providers in `ws.ts` e.g. with an ANTHROPIC_API_KEY.
+- Install deps: `bun install`
 - Run the eval with the cli: `bun wv.ts run -w 4`
     - Use appropriate number of workers based on your rate limit
     - For GitHub category, run with 1 worker, and may need to take some minutes between tasks because of GitHub rate limits
