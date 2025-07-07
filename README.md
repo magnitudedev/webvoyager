@@ -6,7 +6,7 @@
 
 # Magnitude WebVoyager
 
-Magnitude achieves state-of-the-art performance with **93.9% success rate** on WebVoyager, beating all other browser agents, including OpenAI Operator, browser-use, and others.
+[Magnitude](https://github.com/magnitudedev/magnitude) achieves state-of-the-art performance with **93.9% success rate** on WebVoyager, beating all other browser agents, including OpenAI Operator, browser-use, and others.
 
 Comprehensive task results for our run are available [here](https://magnitude-webvoyager.vercel.app/). You can also use this repo to [reproduce our results](#reproducing-results).
 
